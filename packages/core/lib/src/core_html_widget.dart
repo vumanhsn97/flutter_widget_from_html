@@ -105,10 +105,10 @@ class HtmlWidgetState extends State<HtmlWidget> {
   @override
   void initState() {
     super.initState();
-    _built = _build();
+    // _built = _build();
   }
 
-  Widget build(BuildContext context) => _built;
+  Widget build(BuildContext context) => _built ?? _build();
 
   Widget _build() {
     final domNodes = parser.parse(widget.html).body.nodes;
