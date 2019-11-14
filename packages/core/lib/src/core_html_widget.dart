@@ -105,7 +105,10 @@ class HtmlWidgetState extends State<HtmlWidget> {
   @override
   void initState() {
     super.initState();
-    // _built = _build();
+
+    var skipPreBuild = false;
+    assert(skipPreBuild = true);
+    if (!skipPreBuild) _built = _build();
   }
 
   Widget build(BuildContext context) => _built ?? _build();
