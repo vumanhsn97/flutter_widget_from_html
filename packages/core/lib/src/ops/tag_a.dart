@@ -10,10 +10,7 @@ class _TagA {
           final styles = [_kCssTextDecoration, _kCssTextDecorationUnderline];
 
           if (wf.hyperlinkColor != null) {
-            styles.addAll([
-              _kCssColor,
-              _convertColorToHex(wf.hyperlinkColor),
-            ]);
+            styles.addAll([_kCssColor, _colorToCss(wf.hyperlinkColor)]);
           }
 
           return styles;

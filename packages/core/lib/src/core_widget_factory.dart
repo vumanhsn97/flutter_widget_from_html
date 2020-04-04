@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:ui' as ui show ParagraphBuilder;
+import 'package:csslib/parser.dart' as css;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 import 'package:html/dom.dart' as dom;
@@ -615,7 +616,7 @@ class WidgetFactory {
     return meta;
   }
 
-  Color parseColor(String value) => _parseColor(value);
+  Color parseColor(String value) => _cssToColor(value);
 
   CssBorderSide parseCssBorderSide(String value) =>
       _parseCssBorderSide(this, value);
