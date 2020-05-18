@@ -57,6 +57,9 @@ class WidgetFactory extends core.WidgetFactory {
     double width,
   }) {
     final dimensOk = height != null && height > 0 && width != null && width > 0;
+    return Container(
+      child: Text('Hello World'),
+    );
     return VideoPlayer(
       url,
       aspectRatio: dimensOk ? width / height : 16 / 9,
