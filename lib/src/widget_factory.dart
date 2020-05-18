@@ -1,48 +1,44 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart'
     as core;
 import 'package:url_launcher/url_launcher.dart';
 
-import 'builder.dart';
-import 'data.dart';
-import 'helpers.dart';
+import 'data_classes.dart';
 import 'html_widget.dart';
+import 'video_player.dart';
+import 'web_view.dart';
 
 part 'ops/tag_a_extended.dart';
 part 'ops/tag_iframe.dart';
-part 'ops/tag_svg.dart';
 part 'ops/tag_video.dart';
 
-/// A factory to build widget for HTML elements
-/// with support for [WebView] and [VideoPlayer] etc.
 class WidgetFactory extends core.WidgetFactory {
+  final HtmlWidgetConfig _config;
+
   BuildOp _tagAExtended;
   BuildOp _tagIframe;
-  BuildOp _tagSvg;
   BuildOp _tagVideo;
-  HtmlWidget _widget;
+
+  WidgetFactory(this._config) : super(_config);
 
   @override
   Widget buildDivider() => const Divider(height: 1);
 
   @override
   Iterable<Widget> buildGestureDetectors(
-    BuildContext _,
+    BuilderContext bc,
     Iterable<Widget> widgets,
     GestureTapCallback onTap,
   ) =>
       widgets.map((widget) => InkWell(child: widget, onTap: onTap));
 
   @override
-  GestureTapCallback buildGestureTapCallbackForUrl(String url) {
-    if (url == null) return null;
-    if (_widget?.onTapUrl == null) {
-      return () => canLaunch(url).then((ok) => ok ? launch(url) : null);
-    }
-    return () => _widget.onTapUrl(url);
-  }
+  GestureTapCallback buildGestureTapCallbackForUrl(String url) => url != null
+      ? () => _config.onTapUrl != null
+          ? _config.onTapUrl(url)
+          : canLaunch(url).then((ok) => ok ? launch(url) : null)
+      : null;
 
   @override
   ImageProvider buildImageFromUrl(String url) =>
@@ -57,9 +53,6 @@ class WidgetFactory extends core.WidgetFactory {
     double width,
   }) {
     final dimensOk = height != null && height > 0 && width != null && width > 0;
-    return Container(
-      child: Text('Hello World'),
-    );
     return VideoPlayer(
       url,
       aspectRatio: dimensOk ? width / height : 16 / 9,
@@ -75,22 +68,22 @@ class WidgetFactory extends core.WidgetFactory {
     double height,
     double width,
   }) {
-    if (_widget?.webView != true) return buildWebViewLinkOnly(url);
+    if (_config.webView != true) return buildWebViewLinkOnly(url);
 
     final dimensOk = height != null && height > 0 && width != null && width > 0;
     return WebView(
       url,
       aspectRatio: dimensOk ? width / height : 16 / 9,
-      getDimensions: !dimensOk && _widget.webViewJs == true,
+      getDimensions: !dimensOk && _config.webViewJs == true,
       interceptNavigationRequest: (newUrl) {
         if (newUrl == url) return false;
 
         buildGestureTapCallbackForUrl(newUrl)();
         return true;
       },
-      js: _widget.webViewJs == true,
+      js: _config.webViewJs == true,
       unsupportedWorkaroundForIssue37:
-          _widget.unsupportedWebViewWorkaroundForIssue37 == true,
+          _config.unsupportedWebViewWorkaroundForIssue37 == true,
     );
   }
 
@@ -100,35 +93,20 @@ class WidgetFactory extends core.WidgetFactory {
       );
 
   @override
-  void parseTag(
-    NodeMetadata meta,
-    String tag,
-    Map<dynamic, String> attributes,
-  ) {
-    switch (tag) {
+  NodeMetadata parseLocalName(NodeMetadata meta, String localName) {
+    switch (localName) {
       case 'a':
-        meta.op = tagAExtended();
+        meta = lazySet(meta, buildOp: tagAExtended());
         break;
       case 'iframe':
-        meta.op = tagIframe();
         // return asap to avoid being disabled by core
-        return;
-      case 'svg':
-        meta.op = tagSvg();
-        // return asap to avoid being disabled by core
-        return;
+        return lazySet(meta, buildOp: tagIframe());
       case 'video':
-        meta.op = tagVideo();
+        meta = lazySet(meta, buildOp: tagVideo());
         break;
     }
 
-    return super.parseTag(meta, tag, attributes);
-  }
-
-  @override
-  void reset(core.HtmlWidget widget) {
-    if (widget is HtmlWidget) _widget = widget;
-    super.reset(widget);
+    return super.parseLocalName(meta, localName);
   }
 
   BuildOp tagAExtended() {
@@ -139,11 +117,6 @@ class WidgetFactory extends core.WidgetFactory {
   BuildOp tagIframe() {
     _tagIframe ??= _TagIframe(this).buildOp;
     return _tagIframe;
-  }
-
-  BuildOp tagSvg() {
-    _tagSvg ??= _TagSvg(this).buildOp;
-    return _tagSvg;
   }
 
   BuildOp tagVideo() {

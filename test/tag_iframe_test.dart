@@ -1,16 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import '_.dart' as helper;
+import '_.dart' as _;
 
 Future<String> explain(WidgetTester tester, String html) =>
-    helper.explain(tester, html, webView: true);
+    _.explain(tester, html, webView: true);
 
 void main() {
   final src = 'http://domain.com';
 
   testWidgets('renders clickable text', (tester) async {
     final html = '<iframe src="$src"></iframe>';
-    final explained = await helper.explain(tester, html);
+    final explained = await _.explain(tester, html);
     expect(explained, equals("[GestureDetector:child=[Text:$src]]"));
   });
 
@@ -32,13 +32,13 @@ void main() {
     testWidgets('no src', (tester) async {
       final html = '<iframe></iframe>';
       final explained = await explain(tester, html);
-      expect(explained, equals("[widget0]"));
+      expect(explained, equals("[Text:$html]"));
     });
 
     testWidgets('bad src (cannot build full url)', (tester) async {
       final html = '<iframe src="bad"></iframe>';
       final explained = await explain(tester, html);
-      expect(explained, equals("[widget0]"));
+      expect(explained, equals("[Text:$html]"));
     });
   });
 }

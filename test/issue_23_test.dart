@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
+import 'package:html/dom.dart' as dom;
 
 import '_.dart';
 
@@ -17,15 +18,15 @@ class BlockquoteWebViewScreen extends StatelessWidget {
         body: ListView(children: <Widget>[
           HtmlWidget(
             html,
-            factoryBuilder: () => _BlockquoteWebViewWf(),
-            key: hwKey,
+            factoryBuilder: (config) => _BlockquoteWebViewWf(config),
+            key: coreHwKey,
           ),
         ]),
       );
 }
 
 class _BlockquoteWebViewWf extends WidgetFactory {
-  final blockquoteOp = BuildOp(
+  final buildOp = BuildOp(
     onWidgets: (meta, _) => [
       WebView(
         Uri.dataFromString(
@@ -39,14 +40,16 @@ class _BlockquoteWebViewWf extends WidgetFactory {
     ],
   );
 
+  _BlockquoteWebViewWf(HtmlWidgetConfig config) : super(config);
+
   @override
-  void parseTag(NodeMetadata meta, String tag, Map<dynamic, String> attrs) {
-    if (tag == 'blockquote') {
-      meta.op = blockquoteOp;
-      return;
+  NodeMetadata parseElement(NodeMetadata meta, dom.Element e) {
+    switch (e.localName) {
+      case 'blockquote':
+        return lazySet(null, buildOp: buildOp);
     }
 
-    return super.parseTag(meta, tag, attrs);
+    return super.parseElement(meta, e);
   }
 }
 
@@ -58,8 +61,8 @@ void main() {
       hw: HtmlWidget(
         html,
         bodyPadding: const EdgeInsets.all(0),
-        factoryBuilder: () => _BlockquoteWebViewWf(),
-        key: hwKey,
+        factoryBuilder: (hw) => _BlockquoteWebViewWf(hw),
+        key: coreHwKey,
       ),
     );
     expect(

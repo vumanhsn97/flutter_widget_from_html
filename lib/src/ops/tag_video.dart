@@ -9,7 +9,7 @@ class _TagVideo {
 
   BuildOp get buildOp => BuildOp(
         onChild: (meta, e) =>
-            e.localName == 'source' ? meta.op = sourceOp : null,
+            e.localName == 'source' ? lazySet(null, buildOp: sourceOp) : null,
         onWidgets: (meta, widgets) {
           final player = build(
             meta,
@@ -55,5 +55,5 @@ class _TagVideoSource extends StatelessWidget {
   _TagVideoSource(this.url);
 
   @override
-  Widget build(BuildContext context) => widget0;
+  Widget build(BuildContext context) => core.widget0;
 }
