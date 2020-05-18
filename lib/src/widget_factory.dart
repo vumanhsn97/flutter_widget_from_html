@@ -1,8 +1,12 @@
+import 'dart:convert';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart'
     as core;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'data_classes.dart';
 import 'html_widget.dart';
@@ -53,7 +57,6 @@ class WidgetFactory extends core.WidgetFactory {
     double width,
   }) {
     final dimensOk = height != null && height > 0 && width != null && width > 0;
-
     return VideoPlayer(
       url,
       aspectRatio: dimensOk ? width / height : 16 / 9,
@@ -88,10 +91,51 @@ class WidgetFactory extends core.WidgetFactory {
     );
   }
 
-  Widget buildWebViewLinkOnly(String url) => GestureDetector(
-        child: Text('Hello World'),
-        onTap: buildGestureTapCallbackForUrl(url),
-      );
+  Widget buildWebViewLinkOnly(String url) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return FutureBuilder(
+          future: http.get('https://noembed.com/embed?url=$url'),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) return Container();
+            var data = jsonDecode(snapshot.data.body);
+            return GestureDetector(
+              child: Column(
+                children: [
+                  Container(
+                    height: constraints.maxWidth * 9 / 16,
+                    child: Stack(
+                      children: [
+                        Container(
+                          height: constraints.maxWidth * 9 / 16,
+                          width: constraints.maxWidth,
+                          decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.2)),
+                          child: Image.network(data['thumbnail_url']),
+                        ),
+                        Align(
+                            alignment: Alignment.center,
+                            child: FaIcon(
+                              FontAwesomeIcons.youtube,
+                              color: Colors.red,
+                              size: MediaQuery.of(context).size.width / 8,
+                            ))
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+                    child: Text(data['title'], style: TextStyle(fontStyle: FontStyle.italic),),
+                  )
+                ],
+              ),
+              onTap: buildGestureTapCallbackForUrl(url),
+            );
+          },
+        );
+      },
+    );
+  }
 
   @override
   NodeMetadata parseLocalName(NodeMetadata meta, String localName) {
