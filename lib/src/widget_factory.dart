@@ -111,7 +111,7 @@ class WidgetFactory extends core.WidgetFactory {
                           width: constraints.maxWidth,
                           decoration: BoxDecoration(
                               color: Colors.black.withOpacity(0.2)),
-                          child: data['thumbnail_url'] == null ? Image.network(data['thumbnail_url']) : Image.asset('assets/banner.png'),
+                          child: data['thumbnail_url'] != null ? Image.network(data['thumbnail_url']) : Image.asset('assets/banner.png'),
                         ),
                         Align(
                             alignment: Alignment.center,
