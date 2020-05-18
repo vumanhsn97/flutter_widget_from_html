@@ -111,22 +111,22 @@ class WidgetFactory extends core.WidgetFactory {
                           width: constraints.maxWidth,
                           decoration: BoxDecoration(
                               color: Colors.black.withOpacity(0.2)),
-                          child: Image.network(data['thumbnail_url']),
+                          child: data['thumbnail_url'] == null ? Image.network(data['thumbnail_url']) : Image.asset('assets/banner.png'),
                         ),
                         Align(
                             alignment: Alignment.center,
                             child: FaIcon(
                               FontAwesomeIcons.youtube,
                               color: Colors.red,
-                              size: MediaQuery.of(context).size.width / 8,
+                              size: constraints.maxWidth / 8,
                             ))
                       ],
                     ),
                   ),
-                  Padding(
+                  (data['title'] != null) ? Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
                     child: Text(data['title'], style: TextStyle(fontStyle: FontStyle.italic),),
-                  )
+                  ) : Container()
                 ],
               ),
               onTap: buildGestureTapCallbackForUrl(url),
